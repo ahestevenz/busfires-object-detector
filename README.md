@@ -79,5 +79,6 @@ To evaluate the model indicated in `config.json` file, run this command:
 ```
 
 ## Results
+![](https://github.com/ahestevenz/busfires-object-detector/blob/main/assets/smoke_detector_mobilenet_V2_ep_550_bs_64_len_data_1032_augmented_data.gif)
 
 
