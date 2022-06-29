@@ -22,7 +22,7 @@ class BushFiresDetector:
         mobilenet_model = tf.keras.applications.mobilenet_v2.MobileNetV2(
         input_shape=(self.width, self.height, self.channels), include_top=False, weights='imagenet')
       else:
-        logging.error('Mobilenet mode was not found!!')
+        logging.error('Mobilenet model was not found!!')
         return
       feature_extractor = mobilenet_model(inputs)
       return feature_extractor
