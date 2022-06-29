@@ -12,7 +12,7 @@ Credits to [AI For Mankind](https://aiformankind.org/) and [HPWREN](http://hpwre
 
 Datasets: https://github.com/aiformankind/wildfire-smoke-dataset
 
-## Training 
+## Training and Testing
 ### Requirements
 
 #### Python environment
@@ -38,7 +38,7 @@ $ mkvirtualenv venv_py
 $ workon venv_py
 ```
 
-#### Package install
+#### Installing the package
 
 Once the python environment was configured, run the following procedure to install all the required packages
 ```setup
@@ -65,7 +65,7 @@ optional arguments:
                         Run with profiling and store output in given file
 
 ```
-Run the above command to start the training
+Run the above command to start the training (check the `data` and `artefacts` paths in `config.json` first)
 ```train
 (venv_py)$ bn-run-train --json_file config.json   
 ```
@@ -79,6 +79,14 @@ To evaluate the model indicated in `config.json` file, run this command:
 ```
 
 ## Results
-![](https://github.com/ahestevenz/busfires-object-detector/blob/main/assets/smoke_detector_mobilenet_V2_ep_550_bs_64_len_data_1032_augmented_data.gif)
 
+Result using `Smoke V1` dataset:
+![](https://github.com/ahestevenz/busfires-object-detector/blob/main/assets/smoke_detector_mobilenet_V2_ep_550_bs_64_dataset_smoke_v1_len_data_1190_augmented_data.gif)
 
+Result using `Smoke V2` dataset:
+![](https://github.com/ahestevenz/busfires-object-detector/blob/main/assets/smoke_detector_mobilenet_V2_ep_550_bs_64_dataset_smoke_v2_len_data_3504_augmented_data.gif)
+
+## TODO List 
+- [x] Add Docker container option to run/train models
+- [x] Add release revision for Smoke datasets by using DVC
+- [x] Notebook example

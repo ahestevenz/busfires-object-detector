@@ -70,7 +70,7 @@ def display_digits_with_boxes(images:List,
     colors["yellow"] = (255,255,0)
     colors["blue"] = (0,0,255)
     legend = f'{list(colors)[0]}: predicted, {list(colors)[1]}: annotated' if (len(pred_bboxes) > 0) else  f'{list(colors)[0]}: annotated'
-    fig = plt.figure(figsize=(40, 8))
+    fig = plt.figure(figsize=(30, 8))
     plt.title(f'{title} | {legend}')
     plt.yticks([])
     plt.xticks([])

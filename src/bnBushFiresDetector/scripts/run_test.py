@@ -41,16 +41,16 @@ def _main(args):
     logging.info(f'Experiment directory: {experiment_path}')
 
     # 2. Load model
-    logging.info(f'Loading model...')
     exp_conf = utils.load_conf(experiment_path/Path("config.json"), from_string=True)
-    model_name = f"smoke_detector_mobilenet_{exp_conf['model']['mobilenet']}_ep_{exp_conf['train']['epochs']}_bs_{exp_conf['train']['batch_size']}_len_data_{exp_conf['data']['len_train_dataset']}"
+    model_name = f"smoke_detector_mobilenet_{exp_conf['model']['mobilenet']}_ep_{exp_conf['train']['epochs']}_bs_{exp_conf['train']['batch_size']}_dataset_{exp_conf['data']['release']}_len_data_{exp_conf['data']['len_train_dataset']}"
     model_name = f'{model_name}_augmented_data.h5' if exp_conf['data']['need_augmentation'] else f'{model_name}.h5'
+    logging.info(f'Loading model: {model_name}')
     model = keras.models.load_model(experiment_path/Path(model_name))
     logging.debug(model.summary())
     
     # 3. Testing
-    logging.info(f'Testing model...')
-    data_mgt = dataset_mgt.DataManagement(exp_conf['data']['path'], exp_conf['train']['batch_size'])
+    logging.info(f'Testing model using {exp_conf["data"]["release"]} dataset')
+    data_mgt = dataset_mgt.DataManagement(exp_conf['data']['path'], exp_conf['train']['batch_size'], exp_conf['data']['release'])
     _, _, ds_test = data_mgt.get_dataset('test')
     visualization_test_dataset = ds_test.map(data_mgt.original_image_and_bboxes_from_path, num_parallel_calls=16)
     (visualization_test_images, visualization_test_bboxes) = data_mgt.dataset_to_numpy_arrays(visualization_test_dataset, N=10)
@@ -64,9 +64,9 @@ def _main(args):
     original_images, normalized_images, normalized_bboxes = data_mgt.dataset_to_numpy_arrays_with_original_bboxes(visualization_test_dataset, N=500)
     predicted_bboxes = model.predict(normalized_images, batch_size=32)
     iou = perf_helpers.intersection_over_union(predicted_bboxes, normalized_bboxes)
-    logging.debug(f"IOU: {iou}")
-    logging.debug(f"Number of predictions where iou > threshold({conf['perf']['iou_threshold']}): {(iou >= conf['perf']['iou_threshold']).sum()}")
-    logging.debug(f"Number of predictions where iou < threshold({conf['perf']['iou_threshold']}): {(iou < conf['perf']['iou_threshold']).sum()})")
+    logging.info(f"IOU: {iou}")
+    logging.info(f"Number of predictions where iou > threshold({conf['perf']['iou_threshold']}): {(iou >= conf['perf']['iou_threshold']).sum()}")
+    logging.info(f"Number of predictions where iou < threshold({conf['perf']['iou_threshold']}): {(iou < conf['perf']['iou_threshold']).sum()})")
 
     n = exp_conf["test"]["num_samples_to_show"]
     indexes = np.random.choice(len(predicted_bboxes), size=n)

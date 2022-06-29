@@ -22,8 +22,9 @@ setup(  name='bnBushFiresDetector',
         author_email='ahestevenz@bleiben.ar',
         license='Proprietary',
         install_requires=[
-            'numpy==1.23.0', 'pathlib', 'pandas==1.4.3', "tensorflow-gpu==2.6",
-            'matplotlib==3.5.2','loguru==0.6.0', "opencv-python==4.6.0.66"
+            'numpy==1.23.0', 'pathlib', 'pandas==1.4.3', 'sklearn',
+            'matplotlib==3.5.2','loguru==0.6.0', "opencv-python==4.6.0.66",
+            "gdown==4.5.1", "lxml"
         ],
         test_suite='nose.collector',
         tests_require=['nose'],

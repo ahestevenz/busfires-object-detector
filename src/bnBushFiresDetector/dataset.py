@@ -2,38 +2,69 @@ from typing import Tuple, Dict, List
 from pathlib import Path
 import os
 import subprocess
+import gdown
 from loguru import logger as logging
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 
 class DataManagement:
-    def __init__(self, data_dir, batch_size):
+    def __init__(self, data_dir, batch_size, release):
         self.data_dir = data_dir
+        self.release = release
+        assert (self.release == 'smoke_v1' or self.release == 'smoke_v2')
         Path(self.data_dir).mkdir(parents=False, exist_ok=True)
-        if not (Path(self.data_dir)/Path('Smoke')).exists():
+        if not (Path(self.data_dir)/Path(self.release)).exists():
             self.download_smoke_dataset()
         self.ds = self.load_smoke_dataset()
         self.batch_size = batch_size
 
     def download_smoke_dataset(self):
-        cmd = f'curl -L "https://public.roboflow.com/ds/3bLgtHIm8e?key=CFnFVougtG" > {self.data_dir}/roboflow.zip; unzip -o {self.data_dir}/roboflow.zip -d {self.data_dir}/Smoke; rm {self.data_dir}/roboflow.zip'
-        subprocess.run(cmd, shell=True, universal_newlines=True, check=True)
+        if self.release == 'smoke_v1':
+            id = '1sEB77bfp2yMkgsSW9703vwDHol_cK6D5'
+            cmd = f'tar -xf {self.data_dir}/smoke.tar.gz -C {self.data_dir} && mv {self.data_dir}/annotated_bounding_box_hpwren {self.data_dir}/{self.release}  &&rm {self.data_dir}/smoke.tar.gz'
+        elif self.release == 'smoke_v2':
+            id = '1dpTDihAN47rSBRGn_XpEYCCcchXrxnZ0'
+            cmd = f'tar -xf {self.data_dir}/smoke.tar.gz -C {self.data_dir} && mv {self.data_dir}/day_time_wildfire_v2 {self.data_dir}/{self.release}  &&rm {self.data_dir}/smoke.tar.gz'
+        else:
+            cmd = ''
+            logging.error("Wrong dataset release!! Please check the config file.")
+        if not cmd == '':
+            gdown.download(f"https://drive.google.com/uc?id={id}", f"{self.data_dir}/smoke.tar.gz")
+            subprocess.run(cmd, shell=True, universal_newlines=True, check=True)
+        
 
     def load_smoke_dataset(self)->Dict:
-        dataset_paths = [('train','/Smoke/train/'),('valid', '/Smoke/valid/'), ('test', '/Smoke/test/')]
-        ds = {}
-        for dataset, dataset_path in dataset_paths:
-            df = pd.read_csv(f'{self.data_dir}/{dataset_path}/_annotations.csv')
-            for i,row in df.iterrows():
-                image_path = dataset_path + row["filename"]
-                if Path(f'{self.data_dir}/{image_path}').is_file():
-                    df["filename"].to_numpy()[i] = image_path
-                file_paths = df["filename"].values
-                bboxes = df[['xmin', 'ymin', 'xmax', 'ymax']].values
-                ds[dataset] = tf.data.Dataset.from_tensor_slices((file_paths, bboxes))
-        return ds
+        if self.release == 'smoke_v1':
+            dataset_annotations_path = Path(self.data_dir)/Path(f'{self.release}/xmls/')
+        elif self.release == 'smoke_v2':
+            dataset_annotations_path = Path(self.data_dir)/Path(f'{self.release}/annotations/xmls/')
+        else:
+            dataset_annotations_path = ''
+            ds = {}
+            logging.error("Wrong dataset release!! Please check the config file.")
+
+        if not dataset_annotations_path == '':
+            xml_files = dataset_annotations_path.rglob('*.xml')
+            bboxes = []
+            filenames = []
+            for xml in xml_files:
+                bbox = pd.read_xml(xml,xpath=".//object/bndbox").values[0].tolist()
+                filename = pd.read_xml(xml,xpath="/annotation")['filename'].values[0]
+                bboxes.append(bbox)
+                filenames.append(f'/{self.release}/images/{filename}')
+
+            filename_datasets = {}
+            bboxes_datasets = {}
+            filename_datasets['train'], filename_valid_test, bboxes_datasets['train'], bboxes_valid_test = train_test_split(filenames,  bboxes, test_size=0.2, shuffle = True, random_state = 8)
+            filename_datasets['valid'], filename_datasets['test'], bboxes_datasets['valid'], bboxes_datasets['test'] = train_test_split(filename_valid_test,  bboxes_valid_test, test_size=0.3, shuffle = True, random_state = 8)
+
+            ds = {}
+            for dataset in ['train', 'valid', 'test']:
+                ds[dataset] = tf.data.Dataset.from_tensor_slices((filename_datasets[dataset], bboxes_datasets[dataset]))
+        return ds     
 
     def read_image(self, 
                    image_file:str)->tf.Tensor:

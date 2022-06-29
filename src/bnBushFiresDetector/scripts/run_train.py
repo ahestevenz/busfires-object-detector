@@ -42,7 +42,7 @@ def _main(args):
     experiment_path = Path(conf['main']['artefacts']+f'/run_{str(i)}')
     experiment_path.mkdir(parents=False, exist_ok=True)
     logging.info(f'Experiment directory: {experiment_path}')
-    data_mgt = dataset_mgt.DataManagement(conf['data']['path'], conf['train']['batch_size'])
+    data_mgt = dataset_mgt.DataManagement(conf['data']['path'], conf['train']['batch_size'],conf['data']['release'])
     training_dataset, length_of_training_dataset, _ = data_mgt.get_dataset('train', conf['data']['need_augmentation'])
     validation_dataset, length_of_validation_dataset, _ = data_mgt.get_dataset('valid')
 
@@ -69,7 +69,7 @@ def _main(args):
                 steps_per_epoch=steps_per_epoch,
                 validation_steps=validation_steps,
                 verbose=2)
-    model_name = f"smoke_detector_mobilenet_{conf['model']['mobilenet']}_ep_{conf['train']['epochs']}_bs_{conf['train']['batch_size']}_len_data_{length_of_training_dataset}"
+    model_name = f"smoke_detector_mobilenet_{conf['model']['mobilenet']}_ep_{conf['train']['epochs']}_bs_{conf['train']['batch_size']}_dataset_{conf['data']['release']}_len_data_{length_of_training_dataset}"
     model_name = f'{model_name}_augmented_data.h5' if conf['data']['need_augmentation'] else f'{model_name}.h5'
     model.save(experiment_path/Path(model_name))
     
