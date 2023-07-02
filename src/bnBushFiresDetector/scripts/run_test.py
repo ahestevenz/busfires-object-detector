@@ -18,7 +18,7 @@ from bnBushFiresDetector import utils
 
 __author__ = ["Ariel Hernandez <ahestevenz@bleiben.ar>"]
 __copyright__ = "Copyright 2022 Bleiben. All rights reserved."
-__license__ = """Proprietary"""
+__license__ = """General Public License"""
 
 
 def _main(args):
