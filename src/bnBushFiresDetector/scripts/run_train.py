@@ -11,7 +11,7 @@ from loguru import logger as logging
 import numpy as np
 
 # local
-from bnBushFiresDetector import dataset as dataset_mgt
+from bnBushFiresDetector import DataManagement as dataset_mgt
 from bnBushFiresDetector import BushFiresDetector
 from bnBushFiresDetector import plot_helpers
 from bnBushFiresDetector import perf_helpers

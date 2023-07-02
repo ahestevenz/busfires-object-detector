@@ -11,7 +11,7 @@ from tensorflow import keras
 import numpy as np
 
 # local
-from bnBushFiresDetector import dataset as dataset_mgt
+from bnBushFiresDetector import DataManagement as dataset_mgt
 from bnBushFiresDetector import plot_helpers
 from bnBushFiresDetector import perf_helpers
 from bnBushFiresDetector import utils

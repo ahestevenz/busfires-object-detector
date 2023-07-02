@@ -1,1 +1,2 @@
-__all__ = ["dataset","BushFiresDetector","plot_helpers","perf_helpers", "scripts"]
+__all__ = ["DataManagement", "BushFiresDetector",
+           "plot_helpers", "perf_helpers", "scripts"]
