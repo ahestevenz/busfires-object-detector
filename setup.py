@@ -23,7 +23,7 @@ setup(name='bnBushFiresDetector',
       author_email='ahestevenz@bleiben.ar',
       license='Proprietary',
       install_requires=[
-          'numpy==1.23.0', 'pathlib', 'pandas==1.4.3', 'sklearn',
+          'numpy==1.23.0', 'pathlib', 'pandas==1.4.3', 'scikit-learn',
           'matplotlib==3.5.2', 'loguru==0.6.0', "opencv-python==4.6.0.66",
           "gdown==4.5.1", "lxml"
       ],
