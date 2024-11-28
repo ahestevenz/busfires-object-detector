@@ -1,2 +1,2 @@
-__all__ = ["DataManagement", "BushFiresDetector",
+__all__ = ["data_management", "bushfires_detector",
            "plot_helpers", "perf_helpers", "scripts"]

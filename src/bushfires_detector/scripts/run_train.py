@@ -11,11 +11,11 @@ from loguru import logger as logging
 import numpy as np
 
 # local
-from bnBushFiresDetector import DataManagement as dataset_mgt
-from bnBushFiresDetector import BushFiresDetector
-from bnBushFiresDetector import plot_helpers
-from bnBushFiresDetector import perf_helpers
-from bnBushFiresDetector import utils
+from bushfires_detector.data_management import DataManagement
+from bushfires_detector.bushfires_detector import BushFiresDetector
+from bushfires_detector.plot_helpers import display_digits_with_boxes
+from bushfires_detector.perf_helpers import intersection_over_union
+from bushfires_detector.utils import load_conf, save_conf
 
 __author__ = ["Ariel Hernandez <ahestevenz@bleiben.ar>"]
 __copyright__ = "Copyright 2022 Bleiben. All rights reserved."
@@ -35,7 +35,7 @@ def _main(args):
         logging.error(
             f'{args["json_file"]} does not exist. Please check config.json path and try again')
         return -1
-    conf = utils.load_conf(args['json_file'])
+    conf = load_conf(args['json_file'])
 
     i = 0
     while Path(conf['main']['artefacts']+f'/run_{str(i)}').is_dir():
@@ -43,7 +43,7 @@ def _main(args):
     experiment_path = Path(conf['main']['artefacts']+f'/run_{str(i)}')
     experiment_path.mkdir(parents=False, exist_ok=True)
     logging.info(f'Experiment directory: {experiment_path}')
-    data_mgt = dataset_mgt.DataManagement(
+    data_mgt = DataManagement(
         conf['data']['path'], conf['train']['batch_size'], conf['data']['release'])
     training_dataset, length_of_training_dataset, _ = data_mgt.get_dataset(
         'train', conf['data']['need_augmentation'])
@@ -52,7 +52,7 @@ def _main(args):
 
     # 2. Build model
     logging.info(f'Building model...')
-    detector = BushFiresDetector.BushFiresDetector(
+    detector = BushFiresDetector(
         conf['model']['mobilenet'], conf['model']['units_dense_layers'])
     model = detector.define_and_compile_model()
     logging.debug(model.summary())
@@ -86,17 +86,17 @@ def _main(args):
         data_mgt.original_image_and_bboxes_from_path, num_parallel_calls=16)
     (visualization_test_images, visualization_test_bboxes) = data_mgt.dataset_to_numpy_arrays(
         visualization_test_dataset, N=10)
-    plot_helpers.display_digits_with_boxes(np.array(visualization_test_images),
-                                           np.array([]),
-                                           np.array(visualization_test_bboxes),
-                                           np.array([]),
-                                           "Validation images and their bboxes",
-                                           experiment_path)
+    display_digits_with_boxes(np.array(visualization_test_images),
+                            np.array([]),
+                            np.array(visualization_test_bboxes),
+                            np.array([]),
+                            "Validation images and their bboxes",
+                            experiment_path)
 
     original_images, normalized_images, normalized_bboxes = data_mgt.dataset_to_numpy_arrays_with_original_bboxes(
         visualization_test_dataset, N=500)
     predicted_bboxes = model.predict(normalized_images, batch_size=32)
-    iou = perf_helpers.intersection_over_union(
+    iou = intersection_over_union(
         predicted_bboxes, normalized_bboxes)
     logging.debug(f"IOU: {iou}")
     logging.debug(
@@ -106,16 +106,16 @@ def _main(args):
 
     n = conf["test"]["num_samples_to_show"]
     indexes = np.random.choice(len(predicted_bboxes), size=n)
-    plot_helpers. display_digits_with_boxes(original_images[indexes],
-                                            predicted_bboxes[indexes],
-                                            normalized_bboxes[indexes],
-                                            iou[indexes],
-                                            "True and Predicted values",
-                                            experiment_path,
-                                            bboxes_normalized=True)
+    display_digits_with_boxes(original_images[indexes],
+                            predicted_bboxes[indexes],
+                            normalized_bboxes[indexes],
+                            iou[indexes],
+                            "True and Predicted values",
+                            experiment_path,
+                            bboxes_normalized=True)
     # 5. Final tasks
     conf['data']['len_train_dataset'] = length_of_training_dataset
-    utils.save_conf(conf, experiment_path/Path("config.json"))
+    save_conf(conf, experiment_path/Path("config.json"))
     return 0
 
 
