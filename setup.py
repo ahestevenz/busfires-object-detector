@@ -6,7 +6,7 @@ def readme():
         return f.read()
 
 
-setup(name='bnBushFiresDetector',
+setup(name='bushfires_detector',
       version='0.1.0',
       description='Bushfires Detector',
       packages=find_packages('src'),
